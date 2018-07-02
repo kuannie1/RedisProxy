@@ -1,88 +1,74 @@
-
+import java.net.MalformedURLException;
 import java.rmi.Naming;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
-import java.rmi.registry.*; 
-import java.util.HashMap;
+import java.rmi.registry.*;
+import java.util.NoSuchElementException;
 
 /**
  * Remote Object that makes GET and POST requests on the Client's behalf
  * @author anne
  */
 public class Proxy extends UnicastRemoteObject implements ProxyServerInterface {
-    int maxExpiryTimeMinutes = 1;
-    int cacheSize = 5;
-    JedisInstance current = new JedisInstance(maxExpiryTimeMinutes, cacheSize);
-    public Proxy() throws RemoteException {}
+
+    private int maxExpiryTimeMinutes = 1;
+    private int cacheSize = 5;
+    private JedisInstance current = new JedisInstance(maxExpiryTimeMinutes, cacheSize);
+
+    /**
+     * Constructor that starts the server and binds the proxy to a port
+     * @throws RemoteException
+     * @throws MalformedURLException
+     */
+    private Proxy() throws RemoteException, MalformedURLException {
+        System.out.println("RMI server started");
+        LocateRegistry.createRegistry(1099);
+        System.out.println("java RMI registry created.");
+        Naming.rebind("//localhost/ProxyConnection", this);
+        System.out.println("PeerServer bound in registry");
+    }
 
     /**
      * Method that executes a GET request by 
      *  - looking up cached response or
-     *  - calling SendHTTPRequest's get_request
-     * @param url
-     * @return HTTP Response
+     *  - calling SendHTTPRequest's getRequest
+     *      - In this case, the url and response will be stored in the Redis Cache using the addToCache() method
+     * @param url the client's intended site
+     * @return HTTP InputStream
      */
     public String getRequest(String url) {
         try {
+            String response;
             String cacheResponse = current.findCacheResult(url);
+            System.out.println(url + " cacheResponse: " + cacheResponse);
             if (cacheResponse != null){
-                return cacheResponse;
+                response = cacheResponse;
             } else {
-                String response = SendHTTPRequest.get_request(url);
+                response = SendHTTPRequest.getRequest(url);
                 current.addToCache(url, response);
-                return response;
             }
-        } catch (Exception ex) {
+            current.printCacheKeys();
+            return response;
+        } catch (MalformedURLException ex) {
+            ex.printStackTrace();
+            return "Malformed URL. Request could not be made.";
+        } catch (NoSuchElementException ex) {
+            ex.printStackTrace();
+            return "Could not obtain a response for "+ url + ". Request could not be made.";
+        } catch (Exception ex){
             ex.printStackTrace();
             return "Request could not be made";
         }
     }
-    
+
     /**
-     * Method that executes a POST request by 
-     *  - looking up cached response or
-     *  - calling SendHTTPRequest's post_request
-     * @param url
-     * @return HTTP Response
-     */
-    public String postRequest(String url, HashMap<String, String> params) {
-        try {
-            String cacheResult = current.findCacheResult(url);
-            if (cacheResult != null){
-                return cacheResult;
-            } else {
-                String response = SendHTTPRequest.post_request(url, params);
-                current.addToCache(url, response);
-                return response;
-            }
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            return "Request could not be made";
-        }
-    }
-    
-    /**
-     * Method to clear the cache if needed
+     * Client's method of telling Proxy to clear the cache when it (voluntarily) breaks off its connection
      */
     public void clear() {
         current.flushCache();
-        return;
     }
-    
 
     public static void main(String args[]) throws Exception {
-        System.out.println("RMI server started");
-
-        try { 
-            LocateRegistry.createRegistry(1099); 
-            System.out.println("java RMI registry created.");
-        } catch (RemoteException e) {
-            System.out.println("java RMI registry already exists.");
-        }
-        Proxy obj = new Proxy();
-
-        // Bind this object instance to the name "ProxyConnection"
-        Naming.rebind("//localhost/ProxyConnection", obj);
-        System.out.println("PeerServer bound in registry");
+        Proxy prox = new Proxy();
     }
 }
