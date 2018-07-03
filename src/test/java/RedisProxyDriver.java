@@ -11,7 +11,7 @@ import main.java.Proxy;
  */
 public class RedisProxyDriver implements Runnable {
     public static void main (String[] args) throws Exception {
-        Proxy prox = new Proxy();
+        Proxy prox = new Proxy(15, 4);
         Thread thread = new Thread(new RedisProxyDriver());
         thread.sleep(3000); 
         thread.start();
