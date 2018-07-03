@@ -1,9 +1,13 @@
+package main.java;
+
 
 import java.net.ConnectException;
 import java.net.MalformedURLException;
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Class that gets a proxy reference to a remote object and invokes GET/POST request
@@ -19,6 +23,7 @@ public class Client {
     public Client() {
         try {
             this.obj = (ProxyServerInterface)Naming.lookup("//localhost/ProxyConnection");
+            System.out.println("Connected to the Proxy");
         } catch (NotBoundException e) {
             e.printStackTrace();
         } catch (MalformedURLException e) {
@@ -44,19 +49,27 @@ public class Client {
      */
     public void exit() throws RemoteException {
         obj.clear();
-        System.exit(0);
     }
-
+    
+    
+    /**
+     * 
+     * @return
+     * @throws RemoteException 
+     */
+    public HashSet<String> getCache() throws RemoteException {
+        return obj.getCacheSites();
+    }
 
     public static void main(String args[]) throws Exception {
         Client cli = new Client();
-        cli.getPage("https://www.google.com");
+        System.out.println(cli.getPage("https://www.google.com"));
         cli.getPage("https://www.quora.com");
         cli.getPage("https://www.instagram.com");
         cli.getPage("https://www.gmail.com");
         cli.getPage("https://www.stackoverflow.com");
         cli.getPage("http://olin.edu/");
-        cli.getPage("https://medium.com/");
+        cli.getPage("http://httpbin.org/post");
         cli.exit();
     }
 }

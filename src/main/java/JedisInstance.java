@@ -1,3 +1,5 @@
+package main.java;
+
 import java.util.Iterator;
 import java.util.Queue;
 import redis.clients.jedis.Jedis;
@@ -25,8 +27,8 @@ class JedisInstance {
      * @param expiryTimeInMinutes minutes to wait until http response gets evicted
      * @param cacheSize maximum number of http responses that can be saved at a time
      */
-    JedisInstance(int expiryTimeInMinutes, int cacheSize){
-        this.expiryTime = expiryTimeInMinutes*60;
+    JedisInstance(int expiryTimeInSec, int cacheSize){
+        this.expiryTime = expiryTimeInSec;
         this.cacheSize = cacheSize;
         this.instance = new Jedis("localhost");
         this.urls = new LinkedList<String>();
@@ -83,8 +85,7 @@ class JedisInstance {
     /**
      * Helper Method to print all the url keys from the cache
      */
-    void printCacheKeys(){
-        Set<String> savedSites = instance.keys("*");
-        System.out.println(savedSites.toString());
+    Set<String> getCacheKeys(){
+        return instance.keys("*");
     }
 }

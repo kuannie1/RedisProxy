@@ -1,0 +1,5 @@
+main/java/Client.class
+main/java/SendHTTPRequest.class
+main/java/ProxyServerInterface.class
+main/java/JedisInstance.class
+main/java/Proxy.class

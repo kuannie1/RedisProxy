@@ -1,9 +1,13 @@
+package main.java;
+
 import java.net.MalformedURLException;
 import java.rmi.Naming;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.rmi.registry.*;
+import java.util.HashSet;
 import java.util.NoSuchElementException;
+import java.util.Set;
 
 /**
  * Remote Object that makes GET and POST requests on the Client's behalf
@@ -11,53 +15,50 @@ import java.util.NoSuchElementException;
  */
 public class Proxy extends UnicastRemoteObject implements ProxyServerInterface {
 
-    private int maxExpiryTimeMinutes = 1;
-    private int cacheSize = 5;
-    private JedisInstance current = new JedisInstance(maxExpiryTimeMinutes, cacheSize);
+    private int maxExpiryTimeInSec = 15;
+    private int cacheSize = 4;
+    private JedisInstance current = new JedisInstance(maxExpiryTimeInSec, cacheSize);
 
     /**
      * Constructor that starts the server and binds the proxy to a port
      * @throws RemoteException
      * @throws MalformedURLException
      */
-    private Proxy() throws RemoteException, MalformedURLException {
-        System.out.println("RMI server started");
+    public Proxy() throws RemoteException, MalformedURLException {
         LocateRegistry.createRegistry(1099);
-        System.out.println("java RMI registry created.");
         Naming.rebind("//localhost/ProxyConnection", this);
-        System.out.println("PeerServer bound in registry");
     }
 
     /**
      * Method that executes a GET request by 
      *  - looking up cached response or
      *  - calling SendHTTPRequest's getRequest
-     *      - In this case, the url and response will be stored in the Redis Cache using the addToCache() method
+     *      - In this case, the url and response will be stored in 
+     *          Redis Cache using the addToCache() method
+     *      - Any problems with the cache or URL will return an error message to the Client
      * @param url the client's intended site
      * @return HTTP InputStream
      */
     public String getRequest(String url) {
+        String malURLMsg = "Malformed URL. Request could not be made. Try another site that starts with https or http.";
+        String noElementMsg = "Could not obtain a response for "+ url + ". Request could not be made.";
+        String genExceptionMsg = "Request could not be made";
         try {
             String response;
             String cacheResponse = current.findCacheResult(url);
-            System.out.println(url + " cacheResponse: " + cacheResponse);
             if (cacheResponse != null){
                 response = cacheResponse;
             } else {
                 response = SendHTTPRequest.getRequest(url);
                 current.addToCache(url, response);
             }
-            current.printCacheKeys();
             return response;
         } catch (MalformedURLException ex) {
-            ex.printStackTrace();
-            return "Malformed URL. Request could not be made.";
+            return malURLMsg;
         } catch (NoSuchElementException ex) {
-            ex.printStackTrace();
-            return "Could not obtain a response for "+ url + ". Request could not be made.";
+            return noElementMsg;
         } catch (Exception ex){
-            ex.printStackTrace();
-            return "Request could not be made";
+            return genExceptionMsg;
         }
     }
 
@@ -67,8 +68,13 @@ public class Proxy extends UnicastRemoteObject implements ProxyServerInterface {
     public void clear() {
         current.flushCache();
     }
-
-    public static void main(String args[]) throws Exception {
-        Proxy prox = new Proxy();
+    
+    /**
+     * Calculate set of cached sites for testing purposes
+     * @return HashSet (Serializable Set) of the current cached sites
+     */
+    public HashSet<String> getCacheSites(){
+        return (HashSet)current.getCacheKeys();
     }
+
 }
