@@ -37,14 +37,32 @@ public class RedisProxyDriver implements Runnable {
         }
     }
     
+    /**
+     * First method that takes a url and checks if it's not in the cache
+     * @param url site to check in cache
+     * @param cache HashSet of key-value pairs
+     * @return 
+     */
     boolean absenceOf(String url, HashSet<String> cache){
         return !(cache.contains(url));
     }
     
+    /**
+     * Second method that takes in a url and checks if it's in the cache
+     * @param url site to check in cache
+     * @param cache HashSet of key-value pairs
+     * @return 
+     */
     boolean presenceOf(String url, HashSet<String> cache){
         return cache.contains(url);
     }
     
+    /**
+     * Method that takes in an array of urls and checks if each url isn't in the cache
+     * @param urls array of urls to check
+     * @param cache HashSet of key-value pairs
+     * @return 
+     */
     boolean absenceOf(String[] urls, HashSet<String> cache){
         for (String url: urls){
             if (presenceOf(url, cache)){ return false; }
@@ -52,6 +70,12 @@ public class RedisProxyDriver implements Runnable {
         return true;
     }
     
+    /**
+     * Method that takes in an array of urls and checks if each url is in the cache
+     * @param urls array of urls to check
+     * @param cache HashSet of key-value pairs
+     * @return 
+     */
     boolean presenceOf(String[] urls, HashSet<String> cache){
         for (String url: urls){
             if (absenceOf(url, cache)) { return false; }
@@ -131,7 +155,7 @@ public class RedisProxyDriver implements Runnable {
             cli.getPage(url);
         }
         HashSet<String> cachedSites = cli.getCache();
-        
+       
         cli.exit();
         
         boolean oldSitesAbsence = absenceOf(oldURLs, cachedSites);

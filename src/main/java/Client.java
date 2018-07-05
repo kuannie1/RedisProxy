@@ -53,8 +53,8 @@ public class Client {
     
     
     /**
-     * 
-     * @return
+     * Debugging method for checking cache status from client
+     * @return Hashset with pages currently in cache
      * @throws RemoteException 
      */
     public HashSet<String> getCache() throws RemoteException {
