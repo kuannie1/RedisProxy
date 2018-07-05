@@ -60,16 +60,4 @@ public class Client {
     public HashSet<String> getCache() throws RemoteException {
         return obj.getCacheSites();
     }
-
-    public static void main(String args[]) throws Exception {
-        Client cli = new Client();
-        System.out.println(cli.getPage("https://www.google.com"));
-        cli.getPage("https://www.quora.com");
-        cli.getPage("https://www.instagram.com");
-        cli.getPage("https://www.gmail.com");
-        cli.getPage("https://www.stackoverflow.com");
-        cli.getPage("http://olin.edu/");
-        cli.getPage("http://httpbin.org/post");
-        cli.exit();
-    }
 }

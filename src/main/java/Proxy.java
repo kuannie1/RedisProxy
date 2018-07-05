@@ -15,18 +15,18 @@ import java.util.Set;
  */
 public class Proxy extends UnicastRemoteObject implements ProxyServerInterface {
 
-    private int maxExpiryTimeInSec;
-    private int cacheSize;
+    private int maxExpiryTimeInSec = 15;
+    private int cacheSize = 4;
     private JedisInstance current = new JedisInstance(maxExpiryTimeInSec, cacheSize);
 
     /**
      * Constructor that starts the server and binds the proxy to a port
+     * @param expiryTime User-defined time limit to keep site in cache
+     * @param cacheSize User-defined size of Proxy cache
      * @throws RemoteException
      * @throws MalformedURLException
      */
-    public Proxy(int expiryTime, int cacheSize) throws RemoteException, MalformedURLException {
-        this.maxExpiryTimeInSec = expiryTime;
-        this.cacheSize = cacheSize;
+    public Proxy() throws RemoteException, MalformedURLException {
         LocateRegistry.createRegistry(1099);
         Naming.rebind("//localhost/ProxyConnection", this);
     }
@@ -53,6 +53,7 @@ public class Proxy extends UnicastRemoteObject implements ProxyServerInterface {
             } else {
                 response = SendHTTPRequest.getRequest(url);
                 current.addToCache(url, response);
+                System.out.println("new cache: " + current.getCacheKeys().toString());
             }
             return response;
         } catch (MalformedURLException ex) {

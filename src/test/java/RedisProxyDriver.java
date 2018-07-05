@@ -11,9 +11,9 @@ import main.java.Proxy;
  */
 public class RedisProxyDriver implements Runnable {
     public static void main (String[] args) throws Exception {
-        Proxy prox = new Proxy(15, 4);
+        Proxy prox = new Proxy();
+        System.out.println("prox running");
         Thread thread = new Thread(new RedisProxyDriver());
-        thread.sleep(3000); 
         thread.start();
 //      Exiting the main method
     }
@@ -79,13 +79,12 @@ public class RedisProxyDriver implements Runnable {
             cli.getPage(url);
         }
         HashSet<String> cachedSites = cli.getCache();
-        
         cli.exit();
         
         boolean oldSiteAbsence = absenceOf(oldURL, cachedSites);
         boolean newSitesPresence = presenceOf(newURLs, cachedSites);
         boolean sizeCheck = (cachedSites.size() == 2);
-
+        
         return oldSiteAbsence && newSitesPresence && sizeCheck;
     }
     
