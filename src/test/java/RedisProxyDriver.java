@@ -6,13 +6,14 @@ import main.java.Proxy;
 
 
 /**
- *
+ * Driver Class that runs 5 different tests to verify the Proxy works
  * @author anne
  */
 public class RedisProxyDriver implements Runnable {
+    int cacheSize = 4;
+    int expiryTime = 15;
     public static void main (String[] args) throws Exception {
         Proxy prox = new Proxy();
-        System.out.println("prox running");
         Thread thread = new Thread(new RedisProxyDriver());
         thread.start();
 //      Exiting the main method
@@ -96,11 +97,11 @@ public class RedisProxyDriver implements Runnable {
         String[] newURLs = {"https://www.segment.com", "http://www.olin.edu"};
         
         Client cli = new Client();
-        cli.getPage(oldURL);
-        Thread.sleep(15000);
+        cli.accessPage(oldURL);
+        Thread.sleep(expiryTime * 1000);
         
         for (String url:newURLs){
-            cli.getPage(url);
+            cli.accessPage(url);
         }
         HashSet<String> cachedSites = cli.getCache();
         cli.exit();
@@ -122,8 +123,8 @@ public class RedisProxyDriver implements Runnable {
         String oldURL = "https://www.olin.com";
         
         Client cli = new Client();
-        cli.getPage(oldURL);
-        Thread.sleep(15000);
+        cli.accessPage(oldURL);
+        Thread.sleep(expiryTime * 1000);
         HashSet<String> cachedSites = cli.getCache();
         
         cli.exit();
@@ -148,19 +149,17 @@ public class RedisProxyDriver implements Runnable {
         
         Client cli = new Client();
         for (String url: oldURLs){
-            cli.getPage(url);
+            cli.accessPage(url);
         }
-        Thread.sleep(15000);
-        for (String url:newURLs){
-            cli.getPage(url);
-        }
+        Thread.sleep(expiryTime * 1000);
+        for (String url:newURLs){ cli.accessPage(url); }
         HashSet<String> cachedSites = cli.getCache();
        
         cli.exit();
         
         boolean oldSitesAbsence = absenceOf(oldURLs, cachedSites);
         boolean newSitesPresence = presenceOf(newURLs, cachedSites);
-        boolean sizeCheck = (cachedSites.size() == 4);
+        boolean sizeCheck = (cachedSites.size() == cacheSize);
         
         return oldSitesAbsence && newSitesPresence && sizeCheck;
     }
@@ -179,8 +178,8 @@ public class RedisProxyDriver implements Runnable {
         String validURL = "https://www.segment.com";
         
         Client cli = new Client();
-        cli.getPage(malformedURL);
-        cli.getPage(validURL);
+        cli.accessPage(malformedURL);
+        cli.accessPage(validURL);
         HashSet<String> cachedSites = cli.getCache();
         
         cli.exit();
@@ -206,8 +205,8 @@ public class RedisProxyDriver implements Runnable {
         String validURL = "https://www.segment.com";
         
         Client cli = new Client();
-        cli.getPage(malformedURL);
-        cli.getPage(validURL);
+        cli.accessPage(malformedURL);
+        cli.accessPage(validURL);
         HashSet<String> cachedSites = cli.getCache();
         
         cli.exit();
@@ -217,6 +216,6 @@ public class RedisProxyDriver implements Runnable {
         boolean sizeCheck = (cachedSites.size() == 1);
 
         return malformedSiteAbsence && validSitePresence && sizeCheck;
-    }   
+    }
     
 }

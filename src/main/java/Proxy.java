@@ -1,6 +1,11 @@
 package main.java;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
+import java.net.URL;
 import java.rmi.Naming;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
@@ -21,8 +26,6 @@ public class Proxy extends UnicastRemoteObject implements ProxyServerInterface {
 
     /**
      * Constructor that starts the server and binds the proxy to a port
-     * @param expiryTime User-defined time limit to keep site in cache
-     * @param cacheSize User-defined size of Proxy cache
      * @throws RemoteException
      * @throws MalformedURLException
      */
@@ -34,14 +37,14 @@ public class Proxy extends UnicastRemoteObject implements ProxyServerInterface {
     /**
      * Method that executes a GET request by 
      *  - looking up cached response or
-     *  - calling SendHTTPRequest's getRequest
+     *  - making a GET request to retrieve a page's fresh contents
      *      - In this case, the url and response will be stored in 
      *          Redis Cache using the addToCache() method
-     *      - Any problems with the cache or URL will return an error message to the Client
+     *      - Any problems with the cache or URL will return an error message to the Client, but won't be cached
      * @param url the client's intended site
      * @return HTTP InputStream
      */
-    public String getRequest(String url) {
+    public String accessPage(String url) {
         String malURLMsg = "Malformed URL. Request could not be made. Try another site that starts with https or http.";
         String noElementMsg = "Could not obtain a response for "+ url + ". Request could not be made.";
         String genExceptionMsg = "Request could not be made";
@@ -51,9 +54,8 @@ public class Proxy extends UnicastRemoteObject implements ProxyServerInterface {
             if (cacheResponse != null){
                 response = cacheResponse;
             } else {
-                response = SendHTTPRequest.getRequest(url);
+                response = getRequest(url);
                 current.addToCache(url, response);
-                System.out.println("new cache: " + current.getCacheKeys().toString());
             }
             return response;
         } catch (MalformedURLException ex) {
@@ -64,6 +66,40 @@ public class Proxy extends UnicastRemoteObject implements ProxyServerInterface {
             return genExceptionMsg;
         }
     }
+    
+    
+    /**
+     * Method that opens a connection with the uncached user-typed URL
+     * @param url to be accessed
+     * @return HTTP InputStream from GET request
+     * @throws Exception 
+     */
+    String getRequest(String url) throws IOException {
+        HttpURLConnection con;
+        StringBuilder response = new StringBuilder();
+        
+//      Open Connection
+        URL obj = new URL(url);
+        con = (HttpURLConnection) obj.openConnection();
+        con.setRequestMethod("GET");
+        int responseCode = con.getResponseCode();
+        
+//      If all goes well, get the GET Request content
+        if (responseCode >= 400){
+            response.append(con.getErrorStream().toString());
+        } else if (responseCode >= 300){
+            String newURL = con.getHeaderField("Location");
+            System.out.println("Redirecting to " + newURL);
+            return getRequest(newURL);
+        }
+        BufferedReader inputStream = new BufferedReader(new InputStreamReader(con.getInputStream()));
+        String inputLine;
+        while ((inputLine = inputStream.readLine()) != null){ response.append(inputLine); }
+        inputStream.close();
+        
+        return response.toString();
+    }
+    
 
     /**
      * Client's method of telling Proxy to clear the cache when it (voluntarily) breaks off its connection

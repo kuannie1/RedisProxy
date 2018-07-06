@@ -10,7 +10,7 @@ import java.util.HashSet;
  * @author anne
  */
 public interface ProxyServerInterface extends Remote {
-    public String getRequest(String url) throws RemoteException;
+    public String accessPage(String url) throws RemoteException;
     public void clear() throws RemoteException;
     public HashSet<String> getCacheSites() throws RemoteException;
 }

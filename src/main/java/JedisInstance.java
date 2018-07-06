@@ -24,7 +24,7 @@ class JedisInstance {
     /**
      * Initializes the connection to Jedis
      * 
-     * @param expiryTimeInMinutes minutes to wait until http response gets evicted
+     * @param expiryTimeInSec minutes to wait until http response gets evicted
      * @param cacheSize maximum number of http responses that can be saved at a time
      */
     JedisInstance(int expiryTimeInSec, int cacheSize){

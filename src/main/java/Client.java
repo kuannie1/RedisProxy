@@ -10,7 +10,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Class that gets a proxy reference to a remote object and invokes GET/POST request
+ * Class that gets a proxy reference (stub) to a remote object and invokes GET request
  * The Proxy needs to be running before the Client can start
  * @author anne
  */
@@ -23,7 +23,6 @@ public class Client {
     public Client() {
         try {
             this.obj = (ProxyServerInterface)Naming.lookup("//localhost/ProxyConnection");
-            System.out.println("Connected to the Proxy");
         } catch (NotBoundException e) {
             e.printStackTrace();
         } catch (MalformedURLException e) {
@@ -39,8 +38,8 @@ public class Client {
      * @return HTTP InputStream, can be from cache or GET request
      * @throws RemoteException
      */
-    public String getPage(String url) throws RemoteException {
-        return obj.getRequest(url);
+    public String accessPage(String url) throws RemoteException {
+        return obj.accessPage(url);
     }
 
     /**
