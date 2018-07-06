@@ -35,7 +35,7 @@ The cache has 4 main methods. I maintain a queue to keep track of the chronologi
 **Time Complexity: O(number of keys)** because every existing key has to be operated on.
 
 ## Instructions for how to run the proxy and tests
-I couldn't get the application running independently without an IDE due inexperience with maven and docker.   
+I couldn't get the application running independently without an IDE due to inexperience with maven and docker.   
 
 Instructions for running the test cases:
 1. Make sure you have java JDK 8 and Netbeans installed. Accept the License Agreement and look for the right operating system to download the bundle [here](http://www.oracle.com/technetwork/java/javase/downloads/jdk-netbeans-jsp-142931.html).  
