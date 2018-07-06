@@ -78,7 +78,8 @@ class JedisInstance {
     void flushCache(){
         instance.flushAll();
         while (!urls.isEmpty()){
-            urls.remove();
+            String url = urls.remove();
+            instance.del(url);
         }
     }
 
