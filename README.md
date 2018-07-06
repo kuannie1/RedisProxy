@@ -3,9 +3,7 @@
 ## High-level architecture overview.
 ![RMI Overview](images/RMIDiagram.jpg)
 
-By utilizing the Remote Method Invocation, I could get the Proxy to make GET or cache requests on the Client's behalf. 
-Those requests are defined in a Remote Interface called `ProxyServerInterface.java`.
-After the server makes those requests, it may update the Redis cache with a predefined parameters: expiry and cache size.
+This diagram shows how the client talks to the proxy service remotely. When the Proxy is running, it generates a stub (called `ProxyConnection`) in a registry that is accessed by the Client. When the client looks up that stub and finds it, the Client gets to make any method calls defined in the `ProxyServerInterface` as if it were the Proxy. 
  
 ## What the code does
 
