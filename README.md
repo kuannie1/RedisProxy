@@ -25,12 +25,12 @@ This diagram shows how the client talks to the proxy service remotely. When the 
  
 ## Algorithmic complexity of the cache operations
 The cache has 4 main methods. I maintain a queue to keep track of the chronological order of the urls, and a map-based structure for the cache. Each method here uses both the queue and cache except the `findCacheResult()` method.
-1. `addToCache(String url, String response)` takes in two parameters and stores the pair.  
-**Average Time Complexity: O(1)** if the hash function is designed well.
-2. `removeURLSIfNeeded()` removes the oldest element in the linkedlist (O(1) due to queue structure) and uses that value to remove the key-value pair in the Redis cache.  
-**Average Time Complexity: O(1)** for the same reason as 1.
+1. `addToCache(String url, String response)` takes in two parameters and stores the pair in the Redis Cache. It also adds the key value (url) to the queue.  
+**Average Time Complexity: O(1)**
+2. `removeURLSIfNeeded()` removes the oldest element in the linkedlist and uses that value to remove the right key-value pair in the Redis cache.  
+**Average Time Complexity: O(1)**
 3. `findCacheResult(String url)`  checks the Redis cache to see if the url has an entry in the table.  
-**Average Time Complexity: O(1)** for the same reason as 1. 
+**Average Time Complexity: O(1)** 
 4. `flushCache()` deletes every key-value pair in the Redis Cache.  
 **Time Complexity: O(number of keys)** because every existing key has to be operated on.
 
@@ -41,7 +41,7 @@ Instructions for running the test cases:
 1. Make sure you have java JDK 8 and Netbeans installed. Accept the License Agreement and look for the right operating system to download the bundle [here](http://www.oracle.com/technetwork/java/javase/downloads/jdk-netbeans-jsp-142931.html).  
 2. Pull this repository from git using this command: `git clone https://github.com/kuannie1/RedisProxy.git`
 3. Startup Netbeans and open the RedisProxy directory as a project.
-4. Navigate to src/test/java and press F6 or the green triangle to run the file. 
+4. Double click the `RedisProxyDriver.java` file in src/test/java and press F6 or the green triangle (the run program button) to run the file. 
 
 ## How long you spent on each part of the project
 Time spent: About 7 hours a night from June 29th to July 2nd. This time was mostly spent reading tutorials about Jedis, Maven, JUnit, and integrating them into NetBeans or IntelliJ.
@@ -53,7 +53,7 @@ Without Time Inflation:
 - Making Test Cases: 1 hour
 - Finalizing README: 30 minutes
 
-Side note: I took a break on July 3rd and 4th due to family celebrations.
+Side note: I took a break on July 3rd and 4th for family celebrations.
 
 ## A list of the requirements that you did not implement and why
 **Platform and Single-click build and test:** I spent the most time on this, but I couldn't get it to work. I think I have to read manuals and take online courses to familiarize myself with this process.  
